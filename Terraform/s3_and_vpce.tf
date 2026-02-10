@@ -59,7 +59,22 @@ resource "aws_s3_bucket_policy" "backup_policy" {
         }
       },
       {
-        Sid       = "DenyAllPublic"
+        Sid       = "DenyPutNotFromVPCE"
+        Effect    = "Deny"
+        Principal = "*"
+        Action = [
+          "s3:PutObject",
+          "s3:PutObjectAcl"
+        ]
+        Resource = "${aws_s3_bucket.backup.arn}/*"
+        Condition = {
+          StringNotEquals = {
+            "aws:SourceVpce" = aws_vpc_endpoint.s3_endpoint.id
+          }
+        }
+      },
+      {
+        Sid       = "DenyInsecureTransport"
         Effect    = "Deny"
         Principal = "*"
         Action    = "s3:*"
