@@ -185,7 +185,7 @@ Teste (evidência) de que o bucket exige VPCE:
 
 ## Testes
 
-Esta seção é focada em comandos prontos para copiar/colar.
+Esta seção é focada em diversos testes para válidar a segurança dos recursos.
 
 ![Evidência - Testes](imagens/ev9_Testes.png)
 
