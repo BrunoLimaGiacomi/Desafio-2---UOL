@@ -125,7 +125,7 @@ ssh -i .\\Terraform\\bastion.pem -o IdentitiesOnly=yes -J ubuntu@$BastionIp ubun
 Observacoes:
 
 - O IP `10.10.x.x` e privado. Do seu PC voce nao consegue `curl` nele diretamente.
-- Mesmo a partir do bastion, HTTP/80 nas instancias web e bloqueado por Security Group (somente o ALB pode acessar). Use o ALB para testar HTTP.
+- A partir do bastion, HTTP/80 nas instancias web e permitido apenas para teste (requisito do desafio). De fora, use o ALB para acessar a aplicacao.
 
 ### (Alternativa) Acesso via SSM (sem SSH)
 
@@ -134,6 +134,14 @@ Observacoes:
 
 ```powershell
 aws ssm start-session --target i-xxxxxxxxxxxxxxxxx --region us-east-1
+```
+
+### Teste HTTP interno (curl via bastion)
+
+Dentro do bastion:
+
+```bash
+curl -s http://10.10.10.194
 ```
 
 ## Backup (S3 via VPCE + KMS)

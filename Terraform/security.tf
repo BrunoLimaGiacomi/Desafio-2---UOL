@@ -55,6 +55,15 @@ resource "aws_security_group" "web_sg" {
     security_groups = [aws_security_group.alb_sg.id]
   }
 
+  # permitir HTTP a partir do bastion (apenas para teste interno via curl)
+  ingress {
+    description     = "HTTP from Bastion (internal test)"
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    security_groups = [aws_security_group.bastion_sg.id]
+  }
+
   # permitir SSH apenas a partir do SG do bastion
   ingress {
     description     = "SSH from Bastion"
