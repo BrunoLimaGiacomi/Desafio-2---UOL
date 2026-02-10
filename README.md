@@ -255,6 +255,17 @@ Entre em EC2 > Instâncias e tente desligar 1 ou mais Instâncias. Depois de cer
 ![Evidência - Alta disponibilidade (2 AZs / ASG)](imagens/ev3_HA.png)
 
 
+### 6) Chave rotativa
+
+Para confirmar se a chave KMS está rotacionando, entre no CloudShell e escreva:
+
+```bash
+aws kms get-key-rotation-status \
+  --key-id <ID>
+```
+
+![Evidência - Rotação de chave (KMS)](imagens/ev5_Rotacao_De_Chave.png)
+
 ## Como destruir o ambiente
 
 1. Esvazie os buckets (porque `force_destroy = false`):
@@ -287,7 +298,6 @@ Observação: KMS Keys e Secrets Manager podem ficar em estado "scheduled for de
   - Bucket policy nega `PutObject` fora do VPCE e nega tráfego sem TLS (`aws:SecureTransport=false`).
 
 - CloudTrail habilitado gravando em bucket dedicado.
-  ![Evidência - Rotação de chave (KMS)](imagens/ev5_Rotacao_De_Chave.png)
   ![Evidência - CloudTrail](imagens/ev4_CloudTrail.png)
 - Endurecimento básico nas web instances: `server_tokens off`, headers de segurança, `auditd`.
 - IAM nas instâncias:
