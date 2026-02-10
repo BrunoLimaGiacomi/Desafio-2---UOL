@@ -44,21 +44,6 @@ resource "aws_s3_bucket_policy" "backup_policy" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid       = "AllowPutFromVPCE"
-        Effect    = "Allow"
-        Principal = "*"
-        Action = [
-          "s3:PutObject",
-          "s3:PutObjectAcl"
-        ]
-        Resource = "${aws_s3_bucket.backup.arn}/*"
-        Condition = {
-          StringEquals = {
-            "aws:SourceVpce" = aws_vpc_endpoint.s3_endpoint.id
-          }
-        }
-      },
-      {
         Sid       = "DenyPutNotFromVPCE"
         Effect    = "Deny"
         Principal = "*"
