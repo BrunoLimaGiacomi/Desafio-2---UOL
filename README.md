@@ -156,8 +156,6 @@ Dentro do bastion:
 curl -s http://10.10.10.194
 ```
 
-![Evidência - Hello World na instância](imagens/ev8_HelloWorld_na_instancia.png)
-
 ## Backup (S3 via VPCE + KMS)
 
 Nas instâncias web existe:
