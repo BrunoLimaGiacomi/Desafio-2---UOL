@@ -122,13 +122,7 @@ ssh -i .\bastion.pem -o IdentitiesOnly=yes ubuntu@$BastionIp
 
 ### Descobrir as instâncias web (IP privado)
 
-```powershell
-$Asg = terraform output -raw web_asg_name
-$Ids = (aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names $Asg --query "AutoScalingGroups[0].Instances[].InstanceId" --output text)
-aws ec2 describe-instances --instance-ids $Ids --query "Reservations[].Instances[].{Id:InstanceId,PrivateIP:PrivateIpAddress,AZ:Placement.AvailabilityZone}" --output table
-```
-
-![Evidência - Alta disponibilidade (2 AZs / ASG)](imagens/ev3_HA.png)
+Entre em EC2 > Instâncias > Selecione o recurso desejado e veja seu IP Privado
 
 ### Entrar em uma instância web usando o bastion como jump host
 
@@ -189,7 +183,7 @@ Teste (evidência) de que o bucket exige VPCE:
 
 - Tente fazer `PutObject` do seu PC/CloudShell para o bucket. Deve falhar com `AccessDenied` (por design).
 
-## Testes (copiar e colar)
+## Testes
 
 Esta seção é focada em comandos prontos para copiar/colar.
 
@@ -253,6 +247,13 @@ E valide se subiu no bucket (na instância web):
 BUCKET="<cole o output s3_backup_bucket aqui>"
 aws s3 ls "s3://$BUCKET/nginx-backups/" --region us-east-1 | tail -n 5
 ```
+
+
+### 5) HA - Alta redundância
+
+Entre em EC2 > Instâncias e tente desligar 1 ou mais Instâncias. Depois de cerca de 3 minutos, deverá surgir 1 ou mais para  substituí-las.
+![Evidência - Alta disponibilidade (2 AZs / ASG)](imagens/ev3_HA.png)
+
 
 ## Como destruir o ambiente
 
