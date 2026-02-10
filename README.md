@@ -52,7 +52,7 @@ CloudTrail  --->  S3 CloudTrail Bucket
 Notas importantes:
 
 - NAO commitar arquivos sensiveis: `*.tfstate`, `*.pem`, `tfplan` (ja estao no `.gitignore`).
-- O Terraform gera a chave SSH (RSA 4096) e salva localmente em `Terraform/bastion.pem` durante o `terraform apply`.
+- O Terraform gera a chave SSH (RSA 4096) e salva localmente em `Terraform/bastion.pem` (se o arquivo ainda nao existir) durante o `terraform apply`.
 
 ## Reprodutibilidade (passo a passo)
 
@@ -82,6 +82,7 @@ terraform -chdir=Terraform output -raw s3_backup_bucket
 - `project_name` (default: `iac-desafio`): prefixo de nomes/tags.
 - `region` (default: `us-east-1`).
 - `my_ip` (default: `null`): CIDR liberado no SSH do bastion. Se `null`, o Terraform detecta seu IP via `https://api.ipify.org` e usa `/32`.
+- Importante: mudar `project_name` apos o primeiro `apply` forca recriacao de varios recursos (inclui RDS e buckets). Mantenha o mesmo valor entre applies.
 
 Exemplo forcar seu IP manualmente:
 

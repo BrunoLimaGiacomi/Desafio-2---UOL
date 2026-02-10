@@ -74,14 +74,19 @@ CWCFG
   -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json -s || true
 
 # script de backup para enviar /etc/nginx ao S3 usando SSE-KMS
-cat > /usr/local/bin/backup_nginx_configs.sh <<'SCRIPT'
+cat > /usr/local/bin/backup_nginx_configs.sh <<SCRIPT
 #!/bin/bash
-set -e
-TS=$(date -u +"%Y%m%dT%H%M%SZ")
-HOST=$(hostname -f)
-tar -C /etc -czf /tmp/nginx-conf-$TS-$HOST.tar.gz nginx || true
-aws s3 cp /tmp/nginx-conf-$TS-$HOST.tar.gz s3://$BUCKET/nginx-backups/ --sse aws:kms --sse-kms-key-id $KMS_KEY --region $REGION
-rm -f /tmp/nginx-conf-$TS-$HOST.tar.gz
+set -euo pipefail
+
+REGION="$REGION"
+BUCKET="$BUCKET"
+KMS_KEY="$KMS_KEY"
+
+TS=\$(date -u +%Y%m%dT%H%M%SZ)
+HOST=\$(hostname -f)
+tar -C /etc -czf /tmp/nginx-conf-\$TS-\$HOST.tar.gz nginx || true
+aws s3 cp /tmp/nginx-conf-\$TS-\$HOST.tar.gz s3://\$BUCKET/nginx-backups/ --sse aws:kms --sse-kms-key-id \$KMS_KEY --region \$REGION
+rm -f /tmp/nginx-conf-\$TS-\$HOST.tar.gz
 SCRIPT
 
 chmod +x /usr/local/bin/backup_nginx_configs.sh
