@@ -7,6 +7,7 @@ Este repo tem dois workflows em `.github/workflows/`:
   - (Opcional) `terraform plan` no PR se `AWS_ROLE_ARN` estiver configurado (OIDC).
 - `terraform-cd.yml` (CD opcional)
   - Manual (`workflow_dispatch`) com `plan` ou `apply`.
+  - Por seguranca, o `apply` so roda se voce tiver configurado um backend remoto `backend \"s3\"` (para nao perder o state no runner).
   - Usa `environment: production` para permitir gate/aprovacao no GitHub.
   - Assume Role via OIDC (sem chaves estaticas).
 
