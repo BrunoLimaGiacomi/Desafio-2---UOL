@@ -153,8 +153,9 @@ ou, entre em EC2> Selecione a instância > conectar com SSM, conforme print abai
 Dentro do bastion:
 
 ```bash
-curl -s http://10.10.10.194
+curl -s http://{IP_Privado_EC2}
 ```
+
 
 ## Backup (S3 via VPCE + KMS)
 
