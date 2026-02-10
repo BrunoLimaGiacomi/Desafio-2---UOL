@@ -155,7 +155,7 @@ Dentro do bastion:
 ```bash
 curl -s http://{IP_Privado_EC2}
 ```
-
+![Evidência - Acesso ao Bastion](imagens/ev1_Acesso_Bastion.png)
 
 ## Backup (S3 via VPCE + KMS)
 
@@ -170,7 +170,7 @@ Rodar manualmente em uma web instance:
 sudo -n /usr/local/bin/backup_nginx_configs.sh
 ```
 
-![Evidência - Execução do backup](imagens/ev6_Backup.png)
+![Evidência - Execução do backup](imagens/evex.png)
 
 Verificar no bucket (na web instance):
 
