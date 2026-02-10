@@ -37,6 +37,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Guardrail (apply requires remote state backend)
+        if: inputs.action == 'apply'
+        run: |
+          if ! ls *.tf >/dev/null 2>&1; then
+            echo "No Terraform files found in working directory." >&2
+            exit 1
+          fi
+
+          # Prevent accidental applies with ephemeral local state on the runner.
+          if ! grep -RqsE 'backend\\s+\"s3\"' ./*.tf; then
+            echo "Refusing to apply: remote backend (backend \\\"s3\\\") not found in Terraform/*.tf." >&2
+            echo "Configure an S3 backend (recommended) before enabling CD applies." >&2
+            exit 1
+          fi
+
       - name: Ensure AWS_ROLE_ARN is configured
         run: |
           if [ -z "${{ secrets.AWS_ROLE_ARN }}" ] && [ -z "${{ vars.AWS_ROLE_ARN }}" ]; then
