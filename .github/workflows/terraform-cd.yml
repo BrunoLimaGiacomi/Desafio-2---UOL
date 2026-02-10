@@ -1,0 +1,72 @@
+name: Terraform CD
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Choose what to run"
+        required: true
+        type: choice
+        default: plan
+        options:
+          - plan
+          - apply
+      my_ip:
+        description: "Optional CIDR to allow SSH to bastion (e.g. 203.0.113.10/32). Leave empty to auto-detect."
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  TF_IN_AUTOMATION: "true"
+  AWS_REGION: us-east-1
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # Configure the "production" environment in GitHub to require manual approvals.
+    environment: production
+    defaults:
+      run:
+        shell: bash
+        working-directory: Terraform
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure AWS_ROLE_ARN is configured
+        run: |
+          if [ -z "${{ secrets.AWS_ROLE_ARN }}" ] && [ -z "${{ vars.AWS_ROLE_ARN }}" ]; then
+            echo "Missing AWS_ROLE_ARN. Configure it as a GitHub Secret or Variable at repo/org level." >&2
+            exit 1
+          fi
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN || vars.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.14.4
+          terraform_wrapper: false
+
+      - name: terraform init
+        run: terraform init -input=false
+
+      - name: terraform plan
+        run: |
+          args=()
+          if [ -n "${{ inputs.my_ip }}" ]; then
+            args+=("-var" "my_ip=${{ inputs.my_ip }}")
+          fi
+          terraform plan -no-color -input=false -lock=false -out=tfplan "${args[@]}"
+
+      - name: terraform apply
+        if: inputs.action == 'apply'
+        run: terraform apply -auto-approve -input=false -lock=false tfplan

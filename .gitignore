@@ -1,0 +1,18 @@
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.backup
+*.tfstate.*
+*.tfplan
+tfplan
+crash.log
+crash.*.log
+
+# Keys / certs
+*.pem
+*.key
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/

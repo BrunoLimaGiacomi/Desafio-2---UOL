@@ -1,0 +1,138 @@
+name: Terraform CI
+
+on:
+  pull_request:
+    paths:
+      - "Terraform/**"
+      - ".github/workflows/**"
+  push:
+    branches: ["main", "master"]
+    paths:
+      - "Terraform/**"
+      - ".github/workflows/**"
+
+concurrency:
+  group: terraform-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  TF_IN_AUTOMATION: "true"
+
+jobs:
+  fmt-validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: Terraform
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.14.4
+          terraform_wrapper: false
+
+      - name: terraform fmt (check)
+        run: terraform fmt -check -diff -recursive
+
+      - name: terraform init (backend disabled)
+        run: terraform init -backend=false -input=false
+
+      - name: terraform validate
+        run: terraform validate -no-color
+
+  iac-security:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Non-blocking security scans (soft-fail) to keep feedback flowing.
+      - name: tfsec (IaC)
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}:/repo" \
+            aquasec/tfsec:latest \
+            /repo/Terraform || true
+
+      - name: checkov (IaC)
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}:/repo" \
+            bridgecrew/checkov:latest \
+            -d /repo/Terraform || true
+
+  secret-scans:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: gitleaks (secrets)
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}:/repo" \
+            zricethezav/gitleaks:latest \
+            detect --source /repo --no-git --redact
+
+      - name: trufflehog (secrets)
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}:/repo" \
+            trufflesecurity/trufflehog:latest \
+            filesystem /repo --no-update
+
+  plan:
+    runs-on: ubuntu-latest
+    needs: [fmt-validate]
+    if: |
+      github.event_name == 'pull_request' &&
+      (secrets.AWS_ROLE_ARN != '' || vars.AWS_ROLE_ARN != '') &&
+      github.event.pull_request.head.repo.fork == false
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        shell: bash
+        working-directory: Terraform
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN || vars.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.14.4
+          terraform_wrapper: false
+
+      - name: terraform init (backend disabled)
+        run: terraform init -backend=false -input=false
+
+      - name: terraform plan (PR)
+        run: |
+          set +e
+          terraform plan -no-color -input=false -lock=false -detailed-exitcode | tee plan.txt
+          exitcode=${PIPESTATUS[0]}
+          if [ "$exitcode" -eq 1 ]; then
+            exit 1
+          fi
+          exit 0
+
+      - name: Upload plan output
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan
+          path: Terraform/plan.txt
