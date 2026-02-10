@@ -144,6 +144,7 @@ Observações:
 ```powershell
 aws ssm start-session --target i-xxxxxxxxxxxxxxxxx --region us-east-1
 ```
+ou, entre em EC2> Selecione a instância > conectar com SSM, conforme print abaixo:
 
 ![Evidência - Acesso via SSM](imagens/ev7_SSM.png)
 
