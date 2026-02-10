@@ -93,7 +93,6 @@ jobs:
     needs: [fmt-validate]
     if: |
       github.event_name == 'pull_request' &&
-      (secrets.AWS_ROLE_ARN != '' || vars.AWS_ROLE_ARN != '') &&
       github.event.pull_request.head.repo.fork == false
     permissions:
       contents: read
