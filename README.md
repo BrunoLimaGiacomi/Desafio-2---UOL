@@ -299,7 +299,7 @@ Observação: KMS Keys e Secrets Manager podem ficar em estado "scheduled for de
 
 - CloudTrail habilitado gravando em bucket dedicado.
   ![Evidência - CloudTrail](imagens/ev4_CloudTrail.png)
-- Endurecimento básico nas web instances: `server_tokens off`, headers de segurança, `auditd`.
+- hardening básico nas web instances: `server_tokens off`, headers de segurança, `auditd`.
 - IAM nas instâncias:
   - `AmazonSSMManagedInstanceCore` (SSM)
   - `CloudWatchAgentServerPolicy` (logs)
